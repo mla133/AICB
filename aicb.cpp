@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
   int pipe, buf_size, inj_address;
 
   // SETTING UP WHICH FIFO TO USE FOR COMMs TESTING
-  log(__LINE__, "***STARTING UP SAI BLACK BOX***");
+  log(__LINE__, "***STARTING UP AICB BLACK BOX***");
   if ((atoi(argv[1])) == 1)
   {
   	//printf("INCOMING FIFO -> %s\n", PIPE_FIFO1);
@@ -91,7 +91,6 @@ int main(int argc, char *argv[])
 	if ( (buf_size = read(pipe, buffer, MAX_BUF)) < 0) log(__LINE__, "ERROR - Buffer misread");
 	buffer[buf_size] = 0; //null terminate string
 
-	//printf("\E[31;40mIncoming:  %s\E[0m  ", buffer);
 	sprintf(log_msg, "Incoming: %s",buffer);
 	log(__LINE__, log_msg);
         
@@ -101,7 +100,6 @@ int main(int argc, char *argv[])
 	  printf("\E[31;40m%02x ", buffer[i]);
 	printf("]\E[0m");
 #endif
-	//printf("\n");
 
 	// Pull out address to strncat into response later
 	memcpy(address_buf, buffer, 3);
@@ -111,105 +109,50 @@ int main(int argc, char *argv[])
 	strcpy(response, address_buf);
 
 	// Parse buffer, supply response buffer
-
-	//TITAN INJECTOR
-	if( strncmp ("BI 001", buffer+3, 6) == 0 )
-	{
-	    NRT +=0.02; // increment the NRT for additive totals
-	    strcat(response, "OK");
-	}
-	else if ( strncmp ("AS 001 0010.0",buffer+3, 13) == 0 )
-	   strcat(response, "OK");
-	else if ( strncmp ("AL 001", buffer+3, 6) == 0)
-	   strcat(response, "OK");
-	else if ( strncmp ("UL 001", buffer+3, 6) == 0)
-	   strcat(response, "OK");
-	else if ( strncmp ("PS 001 0010", buffer+3, 11) == 0)
-	  strcat(response,"OK");
-	else if ( strncmp ("ac 001", buffer+3, 6) == 0)
-	  strcat(response,"ac 001 0000");
-	else if ( strncmp ("at 001", buffer+3, 6) == 0)
-	{
-	  sprintf(tempBuf, "at 001 %10.1f", NRT);
-	  strcat(response, tempBuf);
-	}
-	else if ( strncmp ("ls 001", buffer+3, 6) == 0)
-	{
-	  sprintf(tempBuf, "ls 001 %09.4f 0000", NRT);
-	  strcat(response, tempBuf);
-	}	
-
-	//BLENDPAK/MINIPAK
-	else if ( strncmp ("EX 050", buffer+3, 6) == 0)
-	{
-	  if(inj_address == 72) NRT2 += 0.01; // increment the NRT for additive totals
-	  if(inj_address == 83) NRT3 += 0.01; // increment the NRT for additive totals
-	  strcat(response,"OK");
-	}
-	else if (strncmp("EX", buffer+3, 2) == 0)
-	  strcat(response,"OK");
-	else if ( strncmp("RV 802", buffer+3, 6) == 0 )
-	  strcat(response, "RV 802 0000");
-	else if (strncmp("RV 860", buffer+3, 6) == 0)
-	{
-	  sprintf(tempBuf, "RV 860 %09.3f", NRT2);
-	  strcat(response, tempBuf);
-	}
-	else if (strncmp("RV 850", buffer+3, 6) == 0) // MINI-PAK POLL_TOTALS
-	{
-	  sprintf(tempBuf, "RV 850 %09.3f", NRT3);
-	  strcat(response, tempBuf);
-	}
-	else if (strncmp("WV", buffer+3, 2) == 0)
-	  strcat(response,"OK");
-
-	// ADD-PAK
-	else if ( strncmp ("IN",buffer+3, 2) == 0 )
+		
+	if ( strncmp ("IN",buffer+3, 2) == 0 ) 			// II
 	{
 	  if(inj_address == 100) NRT4 += 0.01;
 	  strcat(response, "OK");
 	}
-	else if ( strncmp ("EP",buffer+3, 2) == 0 )
+	else if ( strncmp ("EP",buffer+3, 2) == 0 )		// AUTHORIZE
 	  strcat(response, "OK");
-	else if ( strncmp ("DP",buffer+3, 2) == 0 )
+	else if ( strncmp ("DP",buffer+3, 2) == 0 )		// DEAUTHORIZE
 	  strcat(response, "OK");
-	else if ( strncmp ("RC",buffer+3, 2) == 0 )
+	else if ( strncmp ("RC",buffer+3, 2) == 0 )		// RESET_PULSE_COUNT
 	  strcat(response, "OK");
-	else if ( strncmp ("AI",buffer+3, 2) == 0 )
+	else if ( strncmp ("AI",buffer+3, 2) == 0 )		// AUTHORIZE_IO
 	  strcat(response, "OK");
-	else if ( strncmp ("DI",buffer+3, 2) == 0 )
+	else if ( strncmp ("DI",buffer+3, 2) == 0 )		// DEAUTHORIZE_IO
 	  strcat(response, "OK");
-	else if ( strncmp ("CA",buffer+3, 2) == 0 )
+	else if ( strncmp ("CA",buffer+3, 2) == 0 )		// CLEAR_ALARMS
 	  strcat(response, "OK");
-	else if ( strncmp ("PW",buffer+3, 2) == 0 )
-	  strcat(response, "OK");
-	else if ( strncmp ("ST",buffer+3, 2) == 0 )
+	else if ( strncmp ("ST",buffer+3, 2) == 0 )		// POLL_ALARMS
 	  strcat( response, "ST 0000");
-	else if ( strncmp ("SV",buffer+3, 2) == 0 )
+	else if ( strncmp ("SV",buffer+3, 2) == 0 )		// SOFTWARE_VERSION
 	  strcat ( response, "SV 999 ABCDEF01");
-	else if ( strncmp ("TS",buffer+3, 2) == 0 )
+	else if ( strncmp ("TS",buffer+3, 2) == 0 )		// POLL_TOTALS_AND_ALARMS
 	{
 	  sprintf(tempBuf, "TS %012.3f 0000", NRT4);
 	  strcat(response, tempBuf);
 	}
 
+	else if ( strncmp ("PW",buffer+3, 2) == 0 )		// SET ???
+	  strcat(response, "OK");
+
 	// GENERAL ERROR RESPONSES
 	else if ( strncmp ("", buffer, MAX_BUF_LEN) == 0)
 	{
 	  memset(response,0,MAX_BUF);
-	  //printf("\E[33;40m[ERROR -- NO INC BUFFER]\E[0m\n");
 	  log(__LINE__, "Error:  No incoming buffer detected");
 	  continue;
 	}
 	else
 	{
 	  strcat(response,"NO00");
-	  //printf("\E[33;40m[ERROR -- NO CMD MATCH]\E[0m\n");
 	  log(__LINE__, "Error:  No command match");
 	}
 
-	//printf("\E[32;40mOutgoing: ");
-	//printf("\E[32;40m %s \E[0m ",response);
 	sprintf(log_msg, "Incoming: %s",response);
 	log(__LINE__, log_msg);
 
@@ -219,7 +162,6 @@ int main(int argc, char *argv[])
 	  printf("\E[32;40m%02x ", response[i]);
 	printf("]\E[0m\n");
 #endif
-	//printf("\n");
 
 	// Open up inj_rx and write response
 	if ((atoi(argv[1])) == 1)
