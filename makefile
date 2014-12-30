@@ -23,3 +23,5 @@ mail:
 
 gitadd:
 	git add aicb.cpp
+docs:
+	doxygen Doxyfile
