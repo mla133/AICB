@@ -15,9 +15,9 @@
 #include <string.h>
 #include <fcntl.h>
 #include <fstream>
-#define RXFILE1		"/var/tmp/a4m/socat_smart_injector_input_data_file1"
+#define RXFILE1		"/var/tmp/a4m/socat_smart_injector_input_data_file"
 #define RXFILE2		"/var/tmp/a4m/socat_smart_injector_input_data_file2"
-#define PIPE_FIFO1   	"/var/tmp/a4m/socat_output_smart_injector_fifo1"
+#define PIPE_FIFO1   	"/var/tmp/a4m/socat_output_smart_injector_fifo"
 #define PIPE_FIFO2   	"/var/tmp/a4m/socat_output_smart_injector_fifo2"
 #define debugger { printf("%s:%d\n",__FILE__,__LINE__);}
 #define MAX_BUF 25
