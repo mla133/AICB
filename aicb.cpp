@@ -1,23 +1,19 @@
 /* AICB Engine - by Matt Allen */
-// Created new github.com repo for AICB version, based off SAI_Engine tester program
-// Added github.com repository for this to keep track of changes 11/20/14
 
-/* Constantly tries to read file "/var/tmp/a4m/socat_output_injector_fifo" for buffered message
- * and then outputs to write file "/var/tmp/a4m/socat_smart_injector_fifo" for response from pseudo
+/* Constantly tries to read file PIPE_FIFOx for buffered message
+ * and then outputs to write file RXFILE# for response from pseudo
  * smart injector 
- *
- * INPUT:  /var/tmp/a4m/socat_output_injector_fifo
- * OUTPUT: /tmp/inj_rx file populated with SP response to be read by delivery
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
 #include <fstream>
-#define RXFILE1		"/var/tmp/a4m/socat_smart_injector_input_data_file"
+#define RXFILE1		"/var/tmp/a4m/socat_smart_injector_input_data_file1"
 #define RXFILE2		"/var/tmp/a4m/socat_smart_injector_input_data_file2"
-#define PIPE_FIFO1   	"/var/tmp/a4m/socat_output_smart_injector_fifo"
+#define PIPE_FIFO1   	"/var/tmp/a4m/socat_output_smart_injector_fifo1"
 #define PIPE_FIFO2   	"/var/tmp/a4m/socat_output_smart_injector_fifo2"
 #define debugger { printf("%s:%d\n",__FILE__,__LINE__);}
 #define MAX_BUF 25
@@ -61,22 +57,20 @@ int main(int argc, char *argv[])
   int pipe, buf_size, inj_address;
 
   // SETTING UP WHICH FIFO TO USE FOR COMMs TESTING
+#ifdef DEBUG
   log(__LINE__, "***STARTING UP AICB BLACK BOX***");
   if ((atoi(argv[1])) == 1)
   {
-  	//printf("INCOMING FIFO -> %s\n", PIPE_FIFO1);
-  	//printf("OUTGOING FILE -> %s\n", RXFILE1);
 	log(__LINE__, "FIFO -- /var/tmp/a4m/socat_output_smart_injector_fifo1");
 	log(__LINE__, "FILE -- /var/tmp/a4m/socat_smart_injector_input_data_file1");
   }
   else if ((atoi(argv[1])) == 2)
   {
 
-  	//printf("INCOMING FIFO -> %s\n", PIPE_FIFO2);
-  	//printf("OUTGOING FILE -> %s\n", RXFILE2);
 	log(__LINE__, "FIFO -- /var/tmp/a4m/socat_output_smart_injector_fifo2");
 	log(__LINE__, "FILE -- /var/tmp/a4m/socat_smart_injector_input_data_file2");
   }
+#endif
 
   memset(buffer, 0, MAX_BUF);
 
@@ -91,10 +85,10 @@ int main(int argc, char *argv[])
 	if ( (buf_size = read(pipe, buffer, MAX_BUF)) < 0) log(__LINE__, "ERROR - Buffer misread");
 	buffer[buf_size] = 0; //null terminate string
 
+#ifdef DEBUG
 	sprintf(log_msg, "Incoming: %s",buffer);
 	log(__LINE__, log_msg);
         
-#ifdef DEBUG
 	printf("[ ");
 	for (int i=0;i<MAX_BUF;i++)
 	  printf("\E[31;40m%02x ", buffer[i]);
@@ -153,10 +147,10 @@ int main(int argc, char *argv[])
 	  log(__LINE__, "Error:  No command match");
 	}
 
+#ifdef DEBUG
 	sprintf(log_msg, "Incoming: %s",response);
 	log(__LINE__, log_msg);
 
-#ifdef DEBUG
 	printf("[ ");
 	for (int i=0;i<MAX_BUF;i++)
 	  printf("\E[32;40m%02x ", response[i]);
