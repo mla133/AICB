@@ -29,7 +29,7 @@ void log(int line, std::string message = "" )
 	logger << __FILE__<< "[" << line << "]: " << message << std::endl;
 } 
 
-//#define DEBUG 0
+#define DEBUG 0
 int main(int argc, char *argv[])
 {
   if (argc != 2)
@@ -51,9 +51,6 @@ int main(int argc, char *argv[])
   long lSize;
   size_t result;
   double NRT = 0.0;
-  double NRT2 = 0.0;
-  double NRT3 = 0.0;
-  double NRT4 = 0.0;
   int pipe, buf_size, inj_address;
 
   // SETTING UP WHICH FIFO TO USE FOR COMMs TESTING
@@ -106,7 +103,7 @@ int main(int argc, char *argv[])
 		
 	if ( strncmp ("IN",buffer+3, 2) == 0 ) 			// II
 	{
-	  if(inj_address == 100) NRT4 += 0.01;
+	  NRT += 0.01;
 	  strcat(response, "OK");
 	}
 	else if ( strncmp ("EP",buffer+3, 2) == 0 )		// AUTHORIZE
@@ -124,14 +121,14 @@ int main(int argc, char *argv[])
 	else if ( strncmp ("ST",buffer+3, 2) == 0 )		// POLL_ALARMS
 	  strcat( response, "ST 0000");
 	else if ( strncmp ("SV",buffer+3, 2) == 0 )		// SOFTWARE_VERSION
-	  strcat ( response, "SV 999 ABCDEF01");
+	  strcat ( response, "SV 06 ABCDEF01");
 	else if ( strncmp ("TS",buffer+3, 2) == 0 )		// POLL_TOTALS_AND_ALARMS
 	{
-	  sprintf(tempBuf, "TS %012.3f 0000", NRT4);
+	  sprintf(tempBuf, "TS %12.3f 0000", NRT);
 	  strcat(response, tempBuf);
 	}
 
-	else if ( strncmp ("PW",buffer+3, 2) == 0 )		// SET ???
+	else if ( strncmp ("PW",buffer+3, 2) == 0 )		// SET PARAMETERS
 	  strcat(response, "OK");
 
 	// GENERAL ERROR RESPONSES
@@ -148,7 +145,7 @@ int main(int argc, char *argv[])
 	}
 
 #ifdef DEBUG
-	sprintf(log_msg, "Incoming: %s",response);
+	sprintf(log_msg, "Outgoing: %s",response);
 	log(__LINE__, log_msg);
 
 	printf("[ ");
