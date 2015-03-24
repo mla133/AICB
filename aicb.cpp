@@ -11,8 +11,8 @@
 #include <string.h>
 #include <fcntl.h>
 #include <fstream>
-#define RXFILE1		"/var/tmp/a4m/socat_smart_injector_input_data_file1"
-#define RXFILE2		"/var/tmp/a4m/socat_smart_injector_input_data_file2"
+#define RXFILE1		"/var/tmp/a4m/smart_injector_input_data_file1"
+#define RXFILE2		"/var/tmp/a4m/smart_injector_input_data_file2"
 #define PIPE_FIFO1   	"/var/tmp/a4m/socat_output_smart_injector_fifo1"
 #define PIPE_FIFO2   	"/var/tmp/a4m/socat_output_smart_injector_fifo2"
 #define debugger { printf("%s:%d\n",__FILE__,__LINE__);}
@@ -59,13 +59,13 @@ int main(int argc, char *argv[])
   if ((atoi(argv[1])) == 1)
   {
 	log(__LINE__, "FIFO -- /var/tmp/a4m/socat_output_smart_injector_fifo1");
-	log(__LINE__, "FILE -- /var/tmp/a4m/socat_smart_injector_input_data_file1");
+	log(__LINE__, "FILE -- /var/tmp/a4m/smart_injector_input_data_file1");
   }
   else if ((atoi(argv[1])) == 2)
   {
 
 	log(__LINE__, "FIFO -- /var/tmp/a4m/socat_output_smart_injector_fifo2");
-	log(__LINE__, "FILE -- /var/tmp/a4m/socat_smart_injector_input_data_file2");
+	log(__LINE__, "FILE -- /var/tmp/a4m/smart_injector_input_data_file2");
   }
 #endif
 
@@ -96,6 +96,13 @@ int main(int argc, char *argv[])
 	memcpy(address_buf, buffer, 3);
 	address_buf[3] = 0;
 	inj_address = atoi(address_buf);
+
+	if(inj_address<=400)
+	{
+	  printf("MSG NOT FOR US[%d]\n",inj_address);
+	  continue;
+	}
+
 
 	strcpy(response, address_buf);
 
