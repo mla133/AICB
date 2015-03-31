@@ -29,7 +29,6 @@ void log(int line, std::string message = "" )
 	logger << __FILE__<< "[" << line << "]: " << message << std::endl;
 } 
 
-#define DEBUG 0
 int main(int argc, char *argv[])
 {
   if (argc != 2)
@@ -50,11 +49,10 @@ int main(int argc, char *argv[])
   FILE * pFile;
   long lSize;
   size_t result;
-  double NRT = 0.0;
+  double NRT = 0.01;
   int pipe, buf_size, inj_address;
 
   // SETTING UP WHICH FIFO TO USE FOR COMMs TESTING
-#ifdef DEBUG
   log(__LINE__, "***STARTING UP AICB BLACK BOX***");
   if ((atoi(argv[1])) == 1)
   {
@@ -67,7 +65,6 @@ int main(int argc, char *argv[])
 	log(__LINE__, "FIFO -- /var/tmp/a4m/socat_output_smart_injector_fifo2");
 	log(__LINE__, "FILE -- /var/tmp/a4m/smart_injector_input_data_file2");
   }
-#endif
 
   memset(buffer, 0, MAX_BUF);
 
@@ -82,16 +79,9 @@ int main(int argc, char *argv[])
 	if ( (buf_size = read(pipe, buffer, MAX_BUF)) < 0) log(__LINE__, "ERROR - Buffer misread");
 	buffer[buf_size] = 0; //null terminate string
 
-#ifdef DEBUG
-	sprintf(log_msg, "Incoming: %s",buffer);
+	sprintf(log_msg, " Incoming: %s",buffer);
 	log(__LINE__, log_msg);
         
-	printf("[ ");
-	for (int i=0;i<MAX_BUF;i++)
-	  printf("\E[31;40m%02x ", buffer[i]);
-	printf("]\E[0m");
-#endif
-
 	// Pull out address to strncat into response later
 	memcpy(address_buf, buffer, 3);
 	address_buf[3] = 0;
@@ -102,7 +92,6 @@ int main(int argc, char *argv[])
 	  printf("MSG NOT FOR US[%d]\n",inj_address);
 	  continue;
 	}
-
 
 	strcpy(response, address_buf);
 
@@ -151,23 +140,18 @@ int main(int argc, char *argv[])
 	  log(__LINE__, "Error:  No command match");
 	}
 
-#ifdef DEBUG
-	sprintf(log_msg, "Outgoing: %s",response);
-	log(__LINE__, log_msg);
-
-	printf("[ ");
-	for (int i=0;i<MAX_BUF;i++)
-	  printf("\E[32;40m%02x ", response[i]);
-	printf("]\E[0m\n");
-#endif
-
 	// Open up inj_rx and write response
 	if ((atoi(argv[1])) == 1)
 		pFile = fopen( RXFILE1, "w+");
 	if ((atoi(argv[1])) == 2)
 		pFile = fopen( RXFILE2, "w+");
-  	fwrite(response, sizeof(char), strlen(response), pFile);
+
+  	//fwrite(response, sizeof(char), strlen(response), pFile);
+	fprintf(pFile, "%s", response);
   	fclose(pFile);
+
+	sprintf(log_msg, "Outgoing: %s",response);
+	log(__LINE__, log_msg);
 
 	//Zero out tx/rx buffer strings and close up pipe
 	memset(response,0,MAX_BUF);
