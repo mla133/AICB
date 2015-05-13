@@ -1,4 +1,4 @@
-/* AICB Engine - by Matt Allen */
+/* AICB/Metered Injector Engine - by Matt Allen */
 
 /* Constantly tries to read file PIPE_FIFOx for buffered message
  * and then outputs to write file RXFILE# for response from pseudo
@@ -44,7 +44,6 @@ int main(int argc, char *argv[])
   char response[MAX_BUF];
   char tempBuf[40];
   char address_buf[3];
-  char vol_buf[5];
   char log_msg[MAX_BUF];
 
   FILE * pFile;
@@ -57,6 +56,12 @@ int main(int argc, char *argv[])
   float pulse_2 = 0;
   float pulse_3 = 0;
   float pulse_4 = 0;
+
+  int sol_2, sol_3, sol_4, pump_2, pump_3, pump_4;
+
+  enum {
+	OFF,
+	ON};
 
   int pipe, buf_size, inj_address;
 
@@ -111,24 +116,35 @@ int main(int argc, char *argv[])
 	  {
 	  	NRT_2 += 0.013;
 		pulse_2 += 65.0;
+		sol_2 = ON;
+		
 	  }
 	  if (inj_address == 403)
 	  {
 	  	NRT_3 += 0.013;
 		pulse_3 += 65.0;
+		sol_3 = ON;
 	  } 
 	  if (inj_address == 404) {
 	  	NRT_4 += 0.026;
 		pulse_4 += 130.0;
+		sol_4 = ON;
 	  }
 
 	  strcat(response, "OK");
 	}
 
 	else if ( strncmp ("EP",buffer+3, 2) == 0 )		// AUTHORIZE
+	{
+	  pump_2 = pump_3 = pump_4 = ON;
 	  strcat(response, "OK");
+	
+	}
 	else if ( strncmp ("DP",buffer+3, 2) == 0 )		// DEAUTHORIZE
+	{
+	  pump_2 = pump_3 = pump_4 = OFF;
 	  strcat(response, "OK");
+	}
 	else if ( strncmp ("RC",buffer+3, 2) == 0 )		// RESET_PULSE_COUNT
 	{
 	  pulse_2 = 0;
@@ -150,11 +166,20 @@ int main(int argc, char *argv[])
 	{
 
 	  if (inj_address == 402)
+	  {
+	 	sol_2 = OFF;
 	  	sprintf(tempBuf, "TS %12.3f 0000", NRT_2);
+	  }
 	  if (inj_address == 403)
+	  {
+		sol_3 = OFF;
 	  	sprintf(tempBuf, "TS %12.3f 0000", NRT_3);
+	  }
 	  if (inj_address == 404)
+	  {
+	 	sol_4 = OFF;
 	  	sprintf(tempBuf, "TS %12.3f 0000", NRT_4);
+	  }
 
 	  strcat(response, tempBuf);
 	}
@@ -173,13 +198,25 @@ int main(int argc, char *argv[])
 
 	else if ( strncmp ("OS S",buffer+3, 4) == 0 )		// GET SAI STATE OF SOLENOID 
 	{
-		sprintf(tempBuf, "OS S 1");
+		if(inj_address == 402)
+		  sprintf(tempBuf, "OS S %d", sol_2);
+		if(inj_address == 403)
+		  sprintf(tempBuf, "OS S %d", sol_3);
+		if(inj_address == 404)
+		  sprintf(tempBuf, "OS S %d", sol_4);
+
 		strcat(response, tempBuf);
 	}
 
 	else if ( strncmp ("OS P",buffer+3, 4) == 0 )		// GET SAI STATE OF PUMP
 	{
-		sprintf(tempBuf, "OS P 1");
+		if(inj_address == 402)
+		  sprintf(tempBuf, "OS P %d", pump_2);
+		if(inj_address == 403)
+		  sprintf(tempBuf, "OS P %d", pump_3);
+		if(inj_address == 404)
+		  sprintf(tempBuf, "OS P %d", pump_4);
+
 		strcat(response, tempBuf);
 	}
 
