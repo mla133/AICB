@@ -1,0 +1,2 @@
+#!/bin/bash
+json_write smart_injector a4m 1 | tee /var/tmp/a4m/injector-out.log | socat - tcp:192.168.181.77:9258 | tee /var/tmp/a4m/injector-in.log | json_read smart_injector a4m 1
