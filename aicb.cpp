@@ -44,12 +44,20 @@ int main(int argc, char *argv[])
   char response[MAX_BUF];
   char tempBuf[40];
   char address_buf[3];
+  char vol_buf[5];
   char log_msg[MAX_BUF];
 
   FILE * pFile;
   long lSize;
   size_t result;
-  double NRT = 0.01;
+  float CONV_FACTOR = 3785.412;
+  double NRT_2 = 0;
+  double NRT_3 = 0;
+  double NRT_4 = 0;
+  float pulse_2 = 0;
+  float pulse_3 = 0;
+  float pulse_4 = 0;
+
   int pipe, buf_size, inj_address;
 
   // SETTING UP WHICH FIFO TO USE FOR COMMs TESTING
@@ -99,15 +107,35 @@ int main(int argc, char *argv[])
 		
 	if ( strncmp ("IN",buffer+3, 2) == 0 ) 			// II
 	{
-	  NRT += 0.01;
+	  if (inj_address == 402)
+	  {
+	  	NRT_2 += 0.013;
+		pulse_2 += 65.0;
+	  }
+	  if (inj_address == 403)
+	  {
+	  	NRT_3 += 0.013;
+		pulse_3 += 65.0;
+	  } 
+	  if (inj_address == 404) {
+	  	NRT_4 += 0.026;
+		pulse_4 += 130.0;
+	  }
+
 	  strcat(response, "OK");
 	}
+
 	else if ( strncmp ("EP",buffer+3, 2) == 0 )		// AUTHORIZE
 	  strcat(response, "OK");
 	else if ( strncmp ("DP",buffer+3, 2) == 0 )		// DEAUTHORIZE
 	  strcat(response, "OK");
 	else if ( strncmp ("RC",buffer+3, 2) == 0 )		// RESET_PULSE_COUNT
+	{
+	  pulse_2 = 0;
+	  pulse_3 = 0;
+	  pulse_4 = 0;
 	  strcat(response, "OK");
+	}
 	else if ( strncmp ("AI",buffer+3, 2) == 0 )		// AUTHORIZE_IO
 	  strcat(response, "OK");
 	else if ( strncmp ("DI",buffer+3, 2) == 0 )		// DEAUTHORIZE_IO
@@ -120,12 +148,45 @@ int main(int argc, char *argv[])
 	  strcat ( response, "SV 06 ABCDEF01");
 	else if ( strncmp ("TS",buffer+3, 2) == 0 )		// POLL_TOTALS_AND_ALARMS
 	{
-	  sprintf(tempBuf, "TS %12.3f 0000", NRT);
+
+	  if (inj_address == 402)
+	  	sprintf(tempBuf, "TS %12.3f 0000", NRT_2);
+	  if (inj_address == 403)
+	  	sprintf(tempBuf, "TS %12.3f 0000", NRT_3);
+	  if (inj_address == 404)
+	  	sprintf(tempBuf, "TS %12.3f 0000", NRT_4);
+
 	  strcat(response, tempBuf);
 	}
 
+	else if ( strncmp ("PC",buffer+3, 2) == 0 )		// READ PULSE COUNTS
+	{
+	  if (inj_address == 402)
+	  	sprintf(tempBuf, "PC %8.1f", pulse_2);
+	  if (inj_address == 403)
+	  	sprintf(tempBuf, "PC %8.1f", pulse_3);
+	  if (inj_address == 404)
+	  	sprintf(tempBuf, "PC %8.1f", pulse_4);
+
+	  strcat(response, tempBuf);
+	}
+
+	else if ( strncmp ("OS S",buffer+3, 4) == 0 )		// GET SAI STATE OF SOLENOID 
+	{
+		sprintf(tempBuf, "OS S 1");
+		strcat(response, tempBuf);
+	}
+
+	else if ( strncmp ("OS P",buffer+3, 4) == 0 )		// GET SAI STATE OF PUMP
+	{
+		sprintf(tempBuf, "OS P 1");
+		strcat(response, tempBuf);
+	}
+
 	else if ( strncmp ("PW",buffer+3, 2) == 0 )		// SET PARAMETERS
+	{
 	  strcat(response, "OK");
+	}
 
 	// GENERAL ERROR RESPONSES
 	else if ( strncmp ("", buffer, MAX_BUF_LEN) == 0)
