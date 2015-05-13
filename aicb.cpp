@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 
 	if(inj_address<=400)
 	{
-	  printf("MSG NOT FOR US[%d]\n",inj_address);
+	  printf("\E[31;40mMSG NOT FOR US[%d]\E[0m\n",inj_address);
 	  continue;
 	}
 
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
 		sol_4 = ON;
 	  }
 
-	  strcat(response, "OK");
+	  strcat(response, "\E[33;40mOK\E[0m");
 	}
 
 	else if ( strncmp ("EP",buffer+3, 2) == 0 )		// AUTHORIZE
