@@ -1,0 +1,2 @@
+#!/bin/bash
+sqlite3 /dev/shm/accu4_db_ram.sqlite < ~/bin/SQL/prove_inj.sql

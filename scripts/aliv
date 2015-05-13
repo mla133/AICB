@@ -1,0 +1,33 @@
+#!/bin/bash
+OPTIONS="PRESET START ENDTRANS ALARMS CLEARINJ CLEARSYS INIT INITINJ PROVEINJ RESETPC TABLE QUIT"
+select opt in $OPTIONS; do
+  if [ "$opt" = "QUIT" ]; then
+    echo Done
+    exit
+  elif [ "$opt" = "PRESET" ]; then
+    $HOME/bin/preset
+  elif [ "$opt" = "START" ]; then
+    $HOME/bin/run
+  elif [ "$opt" = "ENDTRANS" ]; then
+    $HOME/bin/end_trans
+  elif [ "$opt" = "ALARMS" ]; then
+    $HOME/bin/alarms
+  elif [ "$opt" = "CLEARINJ" ]; then
+    $HOME/bin/clear_inj_alarms
+  elif [ "$opt" = "CLEARSYS" ]; then
+    $HOME/bin/clear_sys_alarms
+  elif [ "$opt" = "INIT" ]; then
+    $HOME/bin/field_init
+  elif [ "$opt" = "INITINJ" ]; then
+    $HOME/bin/init_inj
+  elif [ "$opt" = "PROVEINJ" ]; then
+    $HOME/bin/prove
+  elif [ "$opt" = "RESETPC" ]; then
+    $HOME/bin/reset_pc
+  elif [ "$opt" = "TABLE" ]; then
+    $HOME/bin/prv_table
+  else
+    clear
+    echo Bad Option
+  fi
+done

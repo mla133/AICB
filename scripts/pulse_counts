@@ -1,0 +1,3 @@
+#!/bin/bash
+INJECTOR=$1
+echo -n "$1PC" > /var/tmp/a4m/socat_output_smart_injector_fifo2
