@@ -13,6 +13,7 @@ $(TARGET): $(OBJ)
 
 clean:
 	rm -f *.o $(TARGET) log.txt 
+	rm -rf html
 
 run: $(TARGET)
 	./$(TARGET)

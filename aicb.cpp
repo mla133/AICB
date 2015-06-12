@@ -11,13 +11,20 @@
 #include <string.h>
 #include <fcntl.h>
 #include <fstream>
-#define RXFILE1		"/var/tmp/a4m/smart_injector_input_data_file1"
-#define RXFILE2		"/var/tmp/a4m/smart_injector_input_data_file2"
-#define PIPE_FIFO1   	"/var/tmp/a4m/socat_output_smart_injector_fifo1"
-#define PIPE_FIFO2   	"/var/tmp/a4m/socat_output_smart_injector_fifo2"
+
+#define RXFILE1		"/var/tmp/a4m/serial_input_data_file1"
+#define RXFILE2		"/var/tmp/a4m/serial_input_data_file2"
+#define RXFILE3		"/var/tmp/a4m/serial_input_data_file3"
+#define RXFILE4		"/var/tmp/a4m/serial_input_data_file4"
+#define PIPE_FIFO1   	"/var/tmp/a4m/socat_output_serial_fifo1"
+#define PIPE_FIFO2   	"/var/tmp/a4m/socat_output_serial_fifo2"
+#define PIPE_FIFO3   	"/var/tmp/a4m/socat_output_serial_fifo3"
+#define PIPE_FIFO4   	"/var/tmp/a4m/socat_output_serial_fifo4"
 #define debugger { printf("%s:%d\n",__FILE__,__LINE__);}
 #define MAX_BUF 25
 #define MAX_BUF_LEN 17
+#define MAX_TMP_BUF 40
+#define ADDR_SIZE 3
 
 //  File stream for event log
   std::ofstream logger("log.txt");
@@ -34,30 +41,30 @@ int main(int argc, char *argv[])
   if (argc != 2)
   {
 	printf("USAGE:  ./SAI [option]\n");
-	printf("1.  FIFO #1\n");
-	printf("2.  FIFO #2\n");
-	printf("3.  BOTH FIFOs (not implemented yet)\n");
+	printf("1.  SERIAL #1\n");
+	printf("2.  SERIAL #2\n");
+	printf("3.  SERIAL #3\n");
+	printf("4.  SERIAL #4\n");
+	/*
+	printf("5.  MTR_INJ  \n");
+	printf("6.  A4I (AICB) #1\n");
+	printf("6.  A4I (AICB) #2\n");
+	*/
 	return(1);
   }
 
   char buffer[MAX_BUF];
   char response[MAX_BUF];
-  char tempBuf[40];
-  char address_buf[3];
+  char tempBuf[MAX_TMP_BUF];
+  char address_buf[ADDR_SIZE];
   char log_msg[MAX_BUF];
 
   FILE * pFile;
   long lSize;
   size_t result;
   float CONV_FACTOR = 3785.412;
-  double NRT_2 = 0;
-  double NRT_3 = 0;
-  double NRT_4 = 0;
-  float pulse_2 = 0;
-  float pulse_3 = 0;
-  float pulse_4 = 0;
-
-  int sol_2, sol_3, sol_4, pump_2, pump_3, pump_4;
+  double NRT_1, NRT_2, NRT_3, NRT_4, pulse_1, pulse_2, pulse_3, pulse_4 = 0;
+  int sol_1,sol_2, sol_3, sol_4, pump_1,pump_2, pump_3, pump_4;
 
   enum {
 	OFF,
@@ -69,15 +76,29 @@ int main(int argc, char *argv[])
   log(__LINE__, "***STARTING UP AICB BLACK BOX***");
   if ((atoi(argv[1])) == 1)
   {
-	log(__LINE__, "FIFO -- /var/tmp/a4m/socat_output_smart_injector_fifo1");
-	log(__LINE__, "FILE -- /var/tmp/a4m/smart_injector_input_data_file1");
+	log(__LINE__, "FIFO -- /var/tmp/a4m/socat_output_serial_fifo1");
+	log(__LINE__, "FILE -- /var/tmp/a4m/serial_input_data_file1");
   }
   else if ((atoi(argv[1])) == 2)
   {
 
-	log(__LINE__, "FIFO -- /var/tmp/a4m/socat_output_smart_injector_fifo2");
-	log(__LINE__, "FILE -- /var/tmp/a4m/smart_injector_input_data_file2");
+	log(__LINE__, "FIFO -- /var/tmp/a4m/socat_output_serial_fifo2");
+	log(__LINE__, "FILE -- /var/tmp/a4m/serial_input_data_file2");
   }
+  else if ((atoi(argv[1])) == 3)
+  {
+
+	log(__LINE__, "FIFO -- /var/tmp/a4m/socat_output_serial_fifo2");
+	log(__LINE__, "FILE -- /var/tmp/a4m/serial_input_data_file2");
+  }
+  else if ((atoi(argv[1])) == 4)
+  {
+
+	log(__LINE__, "FIFO -- /var/tmp/a4m/socat_output_serial_fifo2");
+	log(__LINE__, "FILE -- /var/tmp/a4m/serial_input_data_file2");
+  }
+  else
+ 	return(1);
 
   memset(buffer, 0, MAX_BUF);
 
@@ -85,9 +106,13 @@ int main(int argc, char *argv[])
   {
 	//Read in inj_tx to buffer
 	if ((atoi(argv[1])) == 1)
-		if ( (pipe = open( PIPE_FIFO1 , O_RDONLY)) < 0) log(__LINE__, "ERROR - PIPE1 missing");
+		if ( (pipe = open( PIPE_FIFO1 , O_RDONLY)) < 0) log(__LINE__, "ERROR - SERIAL1 missing");
 	if ((atoi(argv[1])) == 2)
-		if ( (pipe = open( PIPE_FIFO2 , O_RDONLY)) < 0) log(__LINE__, "ERROR - PIPE2 missing");
+		if ( (pipe = open( PIPE_FIFO2 , O_RDONLY)) < 0) log(__LINE__, "ERROR - SERIAL2 missing");
+	if ((atoi(argv[1])) == 3)
+		if ( (pipe = open( PIPE_FIFO1 , O_RDONLY)) < 0) log(__LINE__, "ERROR - SERIAL3 missing");
+	if ((atoi(argv[1])) == 4)
+		if ( (pipe = open( PIPE_FIFO1 , O_RDONLY)) < 0) log(__LINE__, "ERROR - SERIAL4 missing");
 
 	if ( (buf_size = read(pipe, buffer, MAX_BUF)) < 0) log(__LINE__, "ERROR - Buffer misread");
 	buffer[buf_size] = 0; //null terminate string
@@ -100,9 +125,9 @@ int main(int argc, char *argv[])
 	address_buf[3] = 0;
 	inj_address = atoi(address_buf);
 
-	if(inj_address<=400)
+	if(inj_address<400)
 	{
-	  printf("\E[31;40mMSG NOT FOR US[%d]\E[0m\n",inj_address);
+	  printf("\E[31;40mAddressing Metered Injectors[%d]\E[0m\n",inj_address);
 	  continue;
 	}
 
@@ -112,6 +137,12 @@ int main(int argc, char *argv[])
 		
 	if ( strncmp ("IN",buffer+3, 2) == 0 ) 			// II
 	{
+	  if (inj_address < 400)
+	  {
+		NRT_1 += 0.013;
+		pulse_1 += 65.0;
+		sol_1 = ON;
+	  }
 	  if (inj_address == 402)
 	  {
 	  	NRT_2 += 0.013;
@@ -136,17 +167,18 @@ int main(int argc, char *argv[])
 
 	else if ( strncmp ("EP",buffer+3, 2) == 0 )		// AUTHORIZE
 	{
-	  pump_2 = pump_3 = pump_4 = ON;
+	  pump_1 = pump_2 = pump_3 = pump_4 = ON;
 	  strcat(response, "OK");
 	
 	}
 	else if ( strncmp ("DP",buffer+3, 2) == 0 )		// DEAUTHORIZE
 	{
-	  pump_2 = pump_3 = pump_4 = OFF;
+	  pump_1 = pump_2 = pump_3 = pump_4 = OFF;
 	  strcat(response, "OK");
 	}
 	else if ( strncmp ("RC",buffer+3, 2) == 0 )		// RESET_PULSE_COUNT
 	{
+	  pulse_1 = 0;
 	  pulse_2 = 0;
 	  pulse_3 = 0;
 	  pulse_4 = 0;
@@ -164,7 +196,11 @@ int main(int argc, char *argv[])
 	  strcat ( response, "SV 06 ABCDEF01");
 	else if ( strncmp ("TS",buffer+3, 2) == 0 )		// POLL_TOTALS_AND_ALARMS
 	{
-
+	  if (inj_address < 400)
+	  {
+		sol_1 = OFF;
+	  	sprintf(tempBuf, "TS %12.3f 0000", NRT_1);
+	  }
 	  if (inj_address == 402)
 	  {
 	 	sol_2 = OFF;
@@ -186,6 +222,8 @@ int main(int argc, char *argv[])
 
 	else if ( strncmp ("PC",buffer+3, 2) == 0 )		// READ PULSE COUNTS
 	{
+	  if (inj_address < 400)
+	  	sprintf(tempBuf, "PC %8.1f", pulse_1);
 	  if (inj_address == 402)
 	  	sprintf(tempBuf, "PC %8.1f", pulse_2);
 	  if (inj_address == 403)
@@ -198,6 +236,8 @@ int main(int argc, char *argv[])
 
 	else if ( strncmp ("OS S",buffer+3, 4) == 0 )		// GET SAI STATE OF SOLENOID 
 	{
+		if(inj_address < 400)
+		  sprintf(tempBuf, "OS S %d", sol_1);
 		if(inj_address == 402)
 		  sprintf(tempBuf, "OS S %d", sol_2);
 		if(inj_address == 403)
@@ -210,6 +250,8 @@ int main(int argc, char *argv[])
 
 	else if ( strncmp ("OS P",buffer+3, 4) == 0 )		// GET SAI STATE OF PUMP
 	{
+		if(inj_address < 400)
+		  sprintf(tempBuf, "OS P %d", pump_1);
 		if(inj_address == 402)
 		  sprintf(tempBuf, "OS P %d", pump_2);
 		if(inj_address == 403)
@@ -243,6 +285,10 @@ int main(int argc, char *argv[])
 		pFile = fopen( RXFILE1, "w+");
 	if ((atoi(argv[1])) == 2)
 		pFile = fopen( RXFILE2, "w+");
+	if ((atoi(argv[1])) == 3)
+		pFile = fopen( RXFILE3, "w+");
+	if ((atoi(argv[1])) == 4)
+		pFile = fopen( RXFILE4, "w+");
 
   	//fwrite(response, sizeof(char), strlen(response), pFile);
 	fprintf(pFile, "%s", response);
