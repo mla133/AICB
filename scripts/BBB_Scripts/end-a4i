@@ -1,0 +1,5 @@
+#!/bin/sh
+killall socat
+killall json_write
+killall json_read
+

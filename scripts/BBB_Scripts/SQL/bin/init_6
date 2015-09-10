@@ -1,0 +1,2 @@
+#!/bin/sh
+sqlite3 /dev/shm/accu4_db_ram.sqlite < /home/root/SQL/init_6.sql

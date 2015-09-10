@@ -1,0 +1,9 @@
+#!/bin/sh
+#
+rm -rf /home/root/PIDS/a4i*
+## Start A4I1 Pipes...
+echo Starting A4I
+json_write mtr_inj a4i | socat - tcp:10.0.0.4:6084 | json_read>/dev/null &
+echo $! > /home/root/PIDS/a4i1_mtr_inj
+echo $!
+echo done...
