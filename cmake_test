@@ -1,0 +1,30 @@
+# stop on first error
+set -e
+
+# Get environment variables set up for the toolchain
+. /usr/local/oecore-x86_64/environment-setup-armv7at2hf-vfp-neon-angstrom-linux-gnueabi
+
+# Create and make default a build directory
+mkdir build-arm/
+cd build-arm/
+
+# Determine if the build type was set, if not default to Debug
+if [ -z $BUILDTYPE ]; then
+    BUILDTYPE="Debug"
+fi
+
+# Start building the execution string
+EXECSTR="cmake  ../ -DCMAKE_BUILD_TYPE=$BUILDTYPE -DCMAKE_TOOLCHAIN_FILE=~/projects/acculoadiv/tc-arm.cmake"
+
+# determine if the optimization level was set, if so add to the execution string
+if [ ! -z $OPTLEVEL ] && [ -n $OPTLEVEL ]; then
+    EXECSTR=$EXECSTR" -DOPTIMIZE=$OPTLEVEL"
+fi
+
+echo $EXECSTR
+
+# cmake and specify the toolchain file (works with the "source" statement above)
+eval $EXECSTR
+
+# now the build and create rootfs overlay
+make
