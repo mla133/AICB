@@ -3,22 +3,21 @@
 import os, sys
 
 fifo_path = '/var/tmp/a4m/socat_output_mtr_inj_fifo' #name of FIFO pipe
-data_path = '/var/tmp/a4m/mtr_inj_input_data_file' #name of DATA file
+data_path = '/dev/shm/a4m_mtr_inj_input_data_file' #name of DATA file
 
 # Lists of AICB commands
 IN_cmd = 'IN'
 EQ_cmd = 'EQ'
 AI_cmd = 'AI'
 DI_cmd = 'DI'
-CA_cmd = 'CA'
+CA_cmd = 'CA FFFF'
 ST_cmd = 'ST'
 TS_cmd = 'TS'
 RC_cmd = 'RC'
 EP_cmd = 'EP'
 DP_cmd = 'DP'
 PC_cmd = 'PC'
-OS_P_cmd = 'OS P'
-OS_S_cmd = 'OS S'
+OS_cmd = 'OS'
 IO_cmd = 'IO'
 PW_cmd = 'PW'
 SV_cmd = 'SV'
@@ -30,7 +29,7 @@ while True:
 
 	fifo = open(fifo_path, "r")
 	for line in fifo:
-		print "\x1b[32;40mReceived: " + line + "\x1b[0m"
+		print "\x1b[32;40mAccuLoad:  " + line + "\x1b[0m"
 		addr = line[0:3]
 		command = line[3:len(line)]
 		
@@ -73,10 +72,16 @@ while True:
 		elif (command == SV_cmd):
 			resp = "SV 06 ABCDEF01"
 
+                elif (command == CA_cmd):
+                        resp = "OK"
+
+                elif (command == PC_cmd):
+                        resp = "OK" 
+
 		else :
 			resp = "NO00"
 
-	print "\x1b[31;40mReponse:  " + addr + resp + "\x1b[0m"
+	print "\x1b[31;40mInjector:  " + addr + resp + "\x1b[0m"
 	fifo.close()
 	
 	data = open(data_path, "w")
