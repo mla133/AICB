@@ -2,8 +2,8 @@
 
 import os, sys
 
-fifo_path = '/var/tmp/a4m/socat_output_serial_fifo3' #name of FIFO pipe
-data_path = '/var/tmp/a4m/serial_input_data_file3' #name of DATA file
+fifo_path = '/var/tmp/a4m/socat_output_mtr_inj_fifo' #name of FIFO pipe
+data_path = '/var/tmp/a4m/mtr_inj_input_data_file' #name of DATA file
 
 # Lists of AICB commands
 IN_cmd = 'IN'
@@ -35,19 +35,19 @@ while True:
 		command = line[3:len(line)]
 		
 		if (command == IN_cmd):
-			if addr == '101':
+			if addr == '301':
 				NRT1 += 0.026
 				PC1 += 133
-			elif addr == '102':
+			elif addr == '302':
 				NRT2 += 0.026
 				PC2 += 133
-			elif addr == '103':
+			elif addr == '303':
 				NRT3 += 0.026
 				PC3 += 133
-			elif addr == '104':
+			elif addr == '304':
 				NRT4 += 0.026
 				PC4 += 133
-			elif addr == '105':
+			elif addr == '305':
 				NRT5 += 0.026
 				PC5 += 133
 			resp = "OK"
@@ -56,15 +56,15 @@ while True:
 			resp = "OK"
 
 		elif (command == TS_cmd):
-			if addr == '101':
+			if addr == '301':
 				resp = "TS %12.3f 0000" % NRT1
-			if addr == '102':
+			if addr == '302':
 				resp = "TS %12.3f 0000" % NRT2
-			if addr == '103':
+			if addr == '303':
 				resp = "TS %12.3f 0000" % NRT3
-			if addr == '104':
+			if addr == '304':
 				resp = "TS %12.3f 0000" % NRT4
-			if addr == '105':
+			if addr == '305':
 				resp = "TS %12.3f 0000" % NRT5
 
 		elif (command == ST_cmd):

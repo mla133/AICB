@@ -1,3 +1,0 @@
-.timeout 10000
-INSERT INTO delivery_queue (delivery_cmd, arm_no, cmd_arg_1) VALUES ('Init Injector', 1, 6);
-.quit

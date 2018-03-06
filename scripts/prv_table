@@ -1,2 +1,0 @@
-#!/bin/bash
-sqlite3 -line /dev/shm/accu4_db_ram.sqlite < ~/bin/SQL/prv_table.sql
