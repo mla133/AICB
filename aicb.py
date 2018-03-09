@@ -60,7 +60,11 @@ while True:
                 command = line[3:5]
                 param = line[6:8]
                 value = line[8:len(line)]
-                inj_addr = (int)(addr)-301
+
+                if (sys.argv[1] == 'a4m'):
+                    inj_addr = (int)(addr)-301
+                if (sys.argv[1] == 'a4b'):
+                    inj_addr = (int)(addr)-401
 
 		if (command == IN_cmd):
                         inj[inj_addr][14] += inj[inj_addr][13] / inj[inj_addr][6]
