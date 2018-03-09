@@ -2,8 +2,17 @@
 
 import os, sys
 
-fifo_path = '/var/tmp/a4m/socat_output_mtr_inj_fifo' #name of FIFO pipe
-data_path = '/dev/shm/a4m_mtr_inj_input_data_file' #name of DATA file
+if (len(sys.argv) < 2):
+    print "Argument needed: a4m or a4b"
+    exit()
+
+if (sys.argv[1] == 'a4m'):
+    fifo_path = '/var/tmp/a4m/socat_output_mtr_inj_fifo' #name of FIFO pipe
+    data_path = '/dev/shm/a4m_mtr_inj_input_data_file' #name of DATA file
+
+elif (sys.argv[1] == 'a4b'):
+    fifo_path = '/var/tmp/a4b/socat_output_mtr_inj_fifo' #name of FIFO pipe
+    data_path = '/dev/shm/a4b_mtr_inj_input_data_file' #name of DATA file
 
 # Lists of AICB commands
 IN_cmd = 'IN'
